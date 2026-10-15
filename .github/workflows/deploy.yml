@@ -1,0 +1,51 @@
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 9 * * *' # todos los días: refresca la copia de respaldo con la API
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Refrescar la copia de respaldo (si la API responde)
+        run: npm run actualizar-copia || echo "La API no respondió: se usa la copia del repositorio."
+      - name: Pruebas con las cifras reales
+        run: npm test
+      - name: Armar la app
+        run: npm run build
+        env:
+          VITE_MODELO_API: ${{ vars.VITE_MODELO_API }}
+          VITE_AUDITORIA_API: ${{ vars.VITE_AUDITORIA_API }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
