@@ -1,0 +1,120 @@
+{
+  "barrio": "S2",
+  "nombre": "Senderos II",
+  "tiposLote": [
+    { "tipo": "Lote común", "cantidad": 17, "coef": "655859.49/11575919.42" },
+    { "tipo": "Lote de coeficiente reducido", "cantidad": 1, "coef": "426308/11575919.42" }
+  ],
+  "coefFuente": "Derivado de la liquidación oficial 10/2026: expensa del lote ÷ total repartido. Falta el reglamento con los coeficientes oficiales.",
+  "coefEstado": "REVISAR",
+  "coefFideicomiso": {
+    "S1": { "propios": "0.1532", "comunes": "0.1425" },
+    "S2": { "propios": "0.1373", "comunes": "0.1276" },
+    "LH": { "propios": "0.15368", "comunes": "0.14293" }
+  },
+  "coefFideicomisoFuente": "Liquidaciones 09/2026 de los tres barrios. La tabla oficial del Fideicomiso es N/D.",
+  "reserva": {
+    "pct": "0.05",
+    "activa": false,
+    "nota": "Propuesta para la asamblea: 5% del gasto ordinario, en una línea aparte. Apagado hasta que se apruebe."
+  },
+  "cuenta": {
+    "titularActual": "El administrador (CUIT 20-25787636-6)",
+    "titularCorrecto": "Fideicomiso de Administración Senderos II (CUIT 30-71925462-0)",
+    "nota": "Los pagos salen de una cuenta de Banco Roela a nombre del administrador (H18). El extracto de julio llegó filtrado (H21)."
+  },
+  "periodos": {
+    "S2-2026-09": {
+      "fbv": {
+        "gastoPropios": "S2-2026-09-G005",
+        "gastoComunes": "S2-2026-09-G006",
+        "base": [
+          { "concepto": "Luz industrial del Fideicomiso (OP 2431)", "importe": "738398.14" },
+          { "concepto": "Reparación de máquina, PDA (OP 2442)", "importe": "92844" },
+          { "concepto": "Cargas sociales, F.931 (OP 485)", "importe": "3831053.66" },
+          { "concepto": "Sindicato UTEDYC (OP 486)", "importe": "250408.93" },
+          { "concepto": "Honorarios de liquidación de sueldos (OP 487)", "importe": "101000" },
+          { "concepto": "Pago a un empleado (OP 489)", "importe": "650000" },
+          { "concepto": "Pago a un empleado (OP 490)", "importe": "250000" },
+          { "concepto": "Sueldos de agosto (OP 492)", "importe": "5705461" },
+          { "concepto": "Menos sueldo de la persona excluida del reparto", "importe": "-953942" }
+        ],
+        "partePropios": "0.8",
+        "parteComunes": "0.2",
+        "coefAplicadoPropios": "0.1373",
+        "coefAplicadoComunes": "0.1276"
+      },
+      "criterios": [
+        { "id": "H08", "hallazgos": ["H08"], "titulo": "Seguridad repartida por lotes con Senderos I", "texto": "Factura 0002-00006570 por $ 11.836.324,87, compartida con Senderos I. 18 de 39 lotes en vez de mitad y mitad.", "activo": true, "tipo": "POR_LOTES", "gasto": "S2-2026-09-G015", "comprobante": "C00029", "lotes": 18, "lotesTotal": 39 },
+        { "id": "H04", "hallazgos": ["H04"], "titulo": "Sin la luz industrial del Fideicomiso", "texto": "La cuenta 7884753119, de tarifa industrial, sale de la base del mantenimiento.", "activo": true, "tipo": "FBV_EXCLUIR", "importe": "738398.14" },
+        { "id": "H25", "hallazgos": ["H25"], "titulo": "La factura PDA se cobra una sola vez", "texto": "La factura A 0005-00009901 ($ 92.844) ya estaba en la caja chica de agosto.", "activo": true, "tipo": "FBV_EXCLUIR", "importe": "92844" },
+        { "id": "H06", "hallazgos": ["H06"], "titulo": "Sin las cargas de la persona excluida", "texto": "Se excluye el costo completo: sueldo y cargas. ESTIMADO por proporción de su sueldo, hasta tener el F.931 por CUIL.", "activo": true, "tipo": "FBV_EXCLUIR", "importe": "640544.73", "estimado": true },
+        { "id": "H05", "hallazgos": ["H05"], "titulo": "Sin honorarios de liquidación de sueldos", "texto": "Es un costo de la estructura del Fideicomiso (OP 487, $ 101.000).", "activo": true, "tipo": "FBV_EXCLUIR", "importe": "101000" },
+        { "id": "H07", "hallazgos": ["H07"], "titulo": "Sin los posibles adelantos de sueldo", "texto": "OP 489 y OP 490 ($ 900.000). A CONFIRMAR con los recibos: apagado por defecto.", "activo": false, "tipo": "FBV_EXCLUIR", "importe": "900000" },
+        { "id": "H31", "hallazgos": ["H15", "H31"], "titulo": "Caja chica solo con comprobantes fiscales", "texto": "Quedan los tiques y facturas; salen las notas sin validez fiscal.", "activo": true, "tipo": "CAJA_CHICA_FISCAL", "gasto": "S2-2026-09-G009" },
+        { "id": "H13", "hallazgos": ["H13"], "titulo": "Cuotas 59 y 60 de ARBA una sola vez", "texto": "Ya se habían liquidado en agosto.", "activo": true, "tipo": "QUITAR", "gastos": ["S2-2026-09-G001", "S2-2026-09-G002"] }
+      ],
+      "deudas": [
+        { "concepto": "Seguridad de agosto · Cruz de Malta", "importe": "5918162.43", "nota": "Factura 0002-00006570, pendiente al cierre.", "tipo": "Deuda del barrio" }
+      ],
+      "creditos": [
+        { "concepto": "Previsión de septiembre", "importe": "1627054.66", "nota": "Se repartió más de lo gastado, sin línea propia ni regla de devolución.", "tipo": "A devolver a los lotes", "hallazgo": "H01" },
+        { "concepto": "Ajuste de honorarios bonificados", "importe": "799729.84", "nota": "Salió de la caja sin gasto ni comprobante.", "tipo": "A aclarar", "hallazgo": "H14" }
+      ],
+      "novedades": [
+        { "titulo": "Previsión de morosidad", "texto": "Si la asamblea aprueba una previsión, va en una línea aparte, con su % y la regla para devolverla cuando los lotes con deuda paguen.", "tipo": "CAMBIO_CRITERIO" }
+      ],
+      "comentarios": {}
+    },
+    "S2-2026-10": {
+      "fbv": {
+        "gastoPropios": "S2-2026-10-G006",
+        "gastoComunes": "S2-2026-10-G007",
+        "base": [
+          { "concepto": "Sueldos sin la persona excluida (OP 494 y OP 499)", "importe": "5981608" },
+          { "concepto": "Cargas sociales sin la persona excluida, F.931 (OP 497)", "importe": "3030578" },
+          { "concepto": "Sindicato UTEDYC (OP 498)", "importe": "250474.33" }
+        ],
+        "partePropios": "0.8",
+        "parteComunes": "0.2",
+        "coefAplicadoPropios": "0.1276",
+        "coefAplicadoComunes": "0.1276"
+      },
+      "criterios": [
+        { "id": "H30", "hallazgos": ["H30"], "titulo": "Obra de cámaras al fondo extraordinario", "texto": "Factura C 00002-00000159 del 05/09/2026 por $ 1.344.000. Una obra no es gasto ordinario.", "activo": true, "tipo": "A_EXTRAORDINARIO", "gasto": "S2-2026-10-G017", "fondo": "EXTRAORDINARIO" },
+        { "id": "H26", "hallazgos": ["H09", "H26"], "titulo": "Telered al abono informado", "texto": "La administración escribió el 10/09/2026 que el abono baja a $ 100.000. Se liquidaron $ 567.600 sin factura.", "activo": true, "tipo": "IMPORTE_SUPUESTO", "gasto": "S2-2026-10-G009", "importe": "100000", "fuente": "Respuesta de la administración del 10/09/2026" },
+        { "id": "H32", "hallazgos": ["H32"], "titulo": "Coeficiente publicado en propios", "texto": "13,73% para Senderos II; la liquidación usó 12,76%. Esta corrección te cobra más.", "activo": true, "tipo": "FBV_COEF_PUBLICADO" },
+        { "id": "H29", "hallazgos": ["H29"], "titulo": "Sin personal de administración", "texto": "3 personas pagadas en efectivo ($ 1.200.000) salen del mantenimiento, como la persona ya excluida.", "activo": true, "tipo": "FBV_EXCLUIR", "importe": "1200000" },
+        { "id": "H23", "hallazgos": ["H23"], "titulo": "Seguridad igual a la factura", "texto": "Factura B 0002-00003731 por $ 5.738.468,08. Se habían liquidado $ 5.880.744,15.", "activo": true, "tipo": "FACTURA", "gasto": "S2-2026-10-G015", "comprobante": "C00072" },
+        { "id": "H31", "hallazgos": ["H15", "H31"], "titulo": "Caja chica solo con comprobantes fiscales", "texto": "Quedan los 4 tiques; salen 10 presupuestos y notas sin validez fiscal.", "activo": true, "tipo": "CAJA_CHICA_FISCAL", "gasto": "S2-2026-10-G010" },
+        { "id": "H28", "hallazgos": ["H04", "H28"], "titulo": "Sin la luz industrial del Fideicomiso", "texto": "Se aplica el mismo % solo a la cuenta de iluminación y bombas. SUPUESTO: el criterio real no está informado.", "activo": true, "tipo": "PROPORCION", "gasto": "S2-2026-10-G003", "quitar": ["C00079"], "total": ["C00079", "C00083"] },
+        { "id": "H27", "hallazgos": ["H07", "H27"], "titulo": "Sueldos según la planilla", "texto": "Salen $ 200.000 que superan la planilla de septiembre.", "activo": true, "tipo": "FBV_EXCLUIR", "importe": "200000" }
+      ],
+      "deudas": [
+        { "concepto": "Seguridad de agosto · Cruz de Malta", "importe": "3654176.39", "nota": "Saldo de la factura 0002-00006570 ($ 5.918.162,43): se pagaron $ 2.263.986,04 el 18/09/2026.", "tipo": "Deuda del barrio", "hallazgo": "H20" },
+        { "concepto": "Proveedores de cámaras", "importe": null, "nota": "La administración reconoce saldos pendientes. Estado de cuenta pedido el 14/09/2026.", "tipo": "Deuda sin informar", "hallazgo": "H11" }
+      ],
+      "creditos": [
+        { "concepto": "Previsión de septiembre", "importe": "1627054.66", "nota": "Se cobró de más en septiembre y no se devolvió cuando los lotes con deuda pagaron.", "tipo": "A devolver a los lotes", "hallazgo": "H01" },
+        { "concepto": "Telered · débito del 15/09/2026", "importe": "567600", "nota": "El banco debitó $ 1.135.200, el doble de lo liquidado.", "tipo": "A reclamar · REVISAR", "hallazgo": "H26" },
+        { "concepto": "Equipo de monitoreo", "importe": "1278320", "nota": "Cobrado en agosto con un presupuesto en dólares, sin factura.", "tipo": "A recuperar si no hay factura", "hallazgo": "H24" },
+        { "concepto": "Factura PDA cobrada dos veces", "importe": "12567", "nota": "Parte de Senderos II de la factura A 0005-00009901.", "tipo": "A recuperar", "hallazgo": "H25" },
+        { "concepto": "Cuotas 59 y 60 de ARBA repetidas", "importe": "597.44", "nota": "Se liquidaron en agosto y otra vez en septiembre.", "tipo": "A recuperar", "hallazgo": "H13" }
+      ],
+      "novedades": [
+        { "titulo": "Cargo nuevo: luz de sectores comunes del Fideicomiso", "texto": "Desde octubre se reparte la luz de iluminación troncal y bombas. Antes de cobrarla hay que informar el criterio de reparto.", "tipo": "CARGO_NUEVO" },
+        { "titulo": "Obra de cámaras", "texto": "La terminación de obra civil ($ 1.344.000) se paga con el fondo extraordinario. Falta el presupuesto total aprobado.", "tipo": "OBRA" },
+        { "titulo": "Honorarios de administración", "texto": "Pasan de $ 578.000 a $ 600.000 por la escala CAPHyAI Clase C de octubre.", "tipo": "AUMENTO" },
+        { "titulo": "Telered", "texto": "El abono informado es $ 100.000. Hace falta la factura para liquidarlo.", "tipo": "AVISO" }
+      ],
+      "comentarios": {
+        "Servicio de seguridad / vigilancia": "Se liquida la factura de septiembre, a nombre de Senderos II solo.",
+        "Telered": "Sin factura; el banco debitó $ 1.135.200 el 15/09/2026.",
+        "Electricidad sectores comunes - Fideicomiso": "Cargo nuevo, sin aviso previo ni criterio de reparto.",
+        "Obra de cámaras (obra civil)": "Gasto nuevo. En el modelo lo paga el fondo extraordinario.",
+        "Honorarios administración": "Escala CAPHyAI Clase C de octubre.",
+        "Mantenimiento Fideicomiso - espacios propios 80%": "Otra base de sueldos y sin la luz industrial."
+      }
+    }
+  }
+}
