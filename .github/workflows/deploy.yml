@@ -27,7 +27,8 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Refrescar la copia de respaldo (si la API responde)
-        run: npm run actualizar-copia || echo "La API no respondió: se usa la copia del repositorio."
+        run: |
+          npm run actualizar-copia || echo "La API no respondio, se usa la copia del repositorio"
       - name: Pruebas con las cifras reales
         run: npm test
       - name: Armar la app
