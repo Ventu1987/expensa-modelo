@@ -10,7 +10,7 @@ La liquidación de expensas que mandaría una administración ordenada: los mism
 | # | Sección | Qué tiene |
 |---|---|---|
 | 1 | Tu expensa | Cuota por tipo de lote, vencimiento y recargo, qué cambió y de cada $ 100 adónde va. |
-| 2 | Gastos del mes | Por rubro: concepto, proveedor, comprobante, mes anterior, este mes, % de variación, **por qué** (editable) y estado de pago. |
+| 2 | Gastos del mes | Por rubro: concepto, proveedor, comprobante, importe, % de variación respecto del mes anterior, **por qué** (editable) y estado de pago. |
 | 3 | Cómo se reparte | Coeficientes, cuota y subtotal por tipo de lote, redondeo. |
 | 4 | Movimientos de la cuenta | Cascada: plata al empezar, cobros, pagos (con detalle), plata al cierre; lo que se debe y la plata libre. |
 | 5 | Fondos | Ordinario, extraordinario y reserva: al empezar, entró, se usó, al cierre. |
@@ -24,6 +24,8 @@ La liquidación de expensas que mandaría una administración ordenada: los mism
 | 13 | Regularizaciones | Los 33 puntos de la auditoría (H01–H32 y LH-10): qué pasó, qué hace esta liquidación, efecto en tu cuota, qué falta y comentario editable. |
 | 14 | Indicadores | Gasto por lote y por m², % con factura, morosidad, IPC de referencia, cuota mes a mes. |
 | 15 | Documentación y contacto | Cómo pagar, documentación del mes y datos de la administración. |
+
+Cada mes nuevo que carga la auditoría se arma solo como **preliminar** con las reglas del barrio (hoja REGLAS).
 
 Además: **Resumen para WhatsApp**, **Anexo** con la diferencia contra la liquidación anterior (cada corrección se puede apagar) y **Administración** (controles que no dejan publicar si algo no cierra, y edición de comentarios).
 

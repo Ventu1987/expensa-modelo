@@ -32,7 +32,7 @@ function Selectores() {
         {[...e.periodos].reverse().map((p) => (
           <option key={p.id} value={p.id}>
             {mesLargo(p.mes)}
-            {e.cfg?.periodos[p.id] ? '' : ' · sin revisar'}
+            {e.cfg?.periodos[p.id] ? (e.cfg.periodos[p.id].automatico ? ' · preliminar' : '') : ' · sin revisar'}
           </option>
         ))}
       </select>

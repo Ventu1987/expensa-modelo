@@ -65,3 +65,30 @@ describe('Liquidación de Senderos II · octubre 2026', () => {
     expect(E.sinPorque).toHaveLength(2);
   });
 });
+
+import { conAutomaticos } from '../modelo/automatico';
+describe('Mes nuevo armado automáticamente', () => {
+  // Simula que octubre recién llegó: sin criterios cargados, solo las reglas del barrio.
+  const sinOct = structuredClone(cfg);
+  delete sinOct.periodos['S2-2026-10'];
+  const auto = conAutomaticos(datos, sinOct);
+  const A = armarLiquidacion(datos, auto, configOficial(datos, 'S2'), 'S2', 'S2-2026-10')!;
+  const fila = (c: string) => A.rubros.flatMap((r) => r.filas).find((f) => f.clave === c)!;
+  it('aplica las reglas de cada mes', () => {
+    expect(auto.periodos['S2-2026-10'].automatico).toBe(true);
+    expect(money(fila('Servicio de seguridad / vigilancia').actual)).toBe('$ 5.738.468,08');
+    expect(money(fila('Telered').actual)).toBe('$ 100.000,00');
+    expect(money(fila('Caja chica Fideicomiso').actual)).toBe('$ 25.530,01');
+    expect(A.extraordinarios.map((x) => money(x.importe))).toEqual(['$ 1.344.000,00']);
+    // el Fideicomiso queda como lo liquidaron, a revisar
+    expect(money(fila('Mantenimiento Fideicomiso - espacios propios 80%').actual)).toBe('$ 945.532,36');
+  });
+  it('lista lo que falta revisar', () => {
+    const p = auto.periodos['S2-2026-10'].pendientes!;
+    expect(p.some((x) => x.startsWith('Mantenimiento del Fideicomiso'))).toBe(true);
+    expect(p.some((x) => x.includes('Electricidad sectores comunes'))).toBe(true);
+  });
+  it('no toca los meses ya revisados', () => {
+    expect(conAutomaticos(datos, cfg)).toBe(cfg);
+  });
+});

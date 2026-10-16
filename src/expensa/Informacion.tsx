@@ -6,7 +6,7 @@ import { mesCorto, mesNombre } from '../lib/fecha';
 import { tablaFideicomiso } from '../modelo/modelo';
 import { historial, novedadesAutomaticas } from '../modelo/historial';
 import { Grafico } from '../pantallas/Historial';
-import { Editable, Linea, Seccion } from './piezas';
+import { Editable, Linea, Seccion, Var } from './piezas';
 import type { Liquidacion, Regularizacion } from './liquidacion';
 
 const TONO_REG: Record<Regularizacion['estado'], 'ok' | 'warn' | 'bad' | 'accent' | undefined> = {
@@ -173,8 +173,11 @@ export function Informacion({ L }: { L: Liquidacion }) {
               <tr>
                 <th>Proveedor</th>
                 <th>Servicio</th>
-                <th className="num">Mes anterior</th>
                 <th className="num">Este mes</th>
+                <th className="num th-var">
+                  Variación
+                  <span>vs. mes anterior</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -182,8 +185,10 @@ export function Informacion({ L }: { L: Liquidacion }) {
                 <tr key={k}>
                   <td>{k}</td>
                   <td className="small" data-l="">{p.conceptos.join(', ')}</td>
-                  <td className="num" data-l="Mes anterior">{p.anterior === null ? '—' : money(p.anterior)}</td>
                   <td className="num" data-l="Este mes">{money(p.actual)}</td>
+                  <td className="num" data-l="Variación vs. mes anterior">
+                    <Var r={p.anterior ? ratioOf(p.actual - p.anterior, p.anterior) : null} anterior={p.anterior} />
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -6,6 +6,7 @@ import { calcularModelo, periodosDe, type OpcionesModelo, type ResultadoModelo }
 import { calcularCuentas, type Cuentas } from './modelo/cuentas';
 import { calcularControles, type Control } from './modelo/controles';
 import S2 from './modelo/config/S2.json';
+import { conAutomaticos } from './modelo/automatico';
 import { armarLiquidacion, type Ediciones, type Liquidacion } from './expensa/liquidacion';
 
 export const BARRIOS = [
@@ -113,6 +114,8 @@ export interface Estado {
   editar: (tipo: 'porque' | 'notas', clave: string, texto: string) => void;
   descartarEdiciones: () => void;
   cambios: number;
+  actualizar: () => void;
+  actualizando: boolean;
 }
 
 const vacias = (): Ediciones => ({ porque: {}, notas: {} });
@@ -132,7 +135,8 @@ export function Proveedor({ children }: { children: ReactNode }) {
   const [carga, setCarga] = useState<Carga | null>(null);
   const [barrio, setBarrioS] = useState('S2');
   const [idPeriodo, setPeriodo] = useState('');
-  const [cfg, setCfg] = useState<ConfigBarrio | null>(null);
+  const [cfgBase, setCfg] = useState<ConfigBarrio | null>(null);
+  const [version, setVersion] = useState(0);
   const [apagados, setApagados] = useState<Set<string>>(new Set());
   const [encendidos, setEncendidos] = useState<Set<string>>(new Set());
   const [reserva, setReservaS] = useState<boolean | undefined>(undefined);
@@ -152,7 +156,7 @@ export function Proveedor({ children }: { children: ReactNode }) {
   useEffect(() => {
     // La API de la auditoría trae los datos de todos los barrios auditados.
     cargarDatos('S2').then(setCarga);
-  }, []);
+  }, [version]);
 
   useEffect(() => {
     let vivo = true;
@@ -160,7 +164,7 @@ export function Proveedor({ children }: { children: ReactNode }) {
     return () => {
       vivo = false;
     };
-  }, [barrio]);
+  }, [barrio, version]);
 
   useEffect(() => {
     const el = document.documentElement;
@@ -175,6 +179,8 @@ export function Proveedor({ children }: { children: ReactNode }) {
   }, [tema]);
 
   const datos = carga?.datos ?? null;
+  // Los meses nuevos que trae la auditoría se arman solos con las reglas del barrio (quedan como preliminares).
+  const cfg = useMemo(() => (datos && cfgBase ? conAutomaticos(datos, cfgBase) : cfgBase), [datos, cfgBase]);
   const periodos = useMemo(() => (datos ? periodosDe(datos, barrio).map((p) => ({ id: p.ID_Periodo, mes: p.Mes })) : []), [datos, barrio]);
 
   // Mes por defecto: el último con modelo; si no hay, el último publicado. El enlace puede pedir otro (?p=).
@@ -277,6 +283,11 @@ export function Proveedor({ children }: { children: ReactNode }) {
     editar: (tipo, clave, texto) => guardarBorrador({ ...ediciones, [tipo]: { ...ediciones[tipo], [clave]: texto } }),
     descartarEdiciones: () => guardarBorrador(vacias()),
     cambios: Object.keys(ediciones.porque).length + Object.keys(ediciones.notas).length,
+    actualizar: () => {
+      setCarga(null);
+      setVersion((v) => v + 1);
+    },
+    actualizando: carga === null,
   };
   return <Ctx.Provider value={e}>{children}</Ctx.Provider>;
 }

@@ -27,6 +27,7 @@ var HOJAS = {
   ACTAS: ['Fecha', 'Barrio', 'Asamblea', 'Tema', 'Decision', 'Enlace'],
   ESTADO_PUBLICACION: ['ID_Periodo', 'Control', 'Aclaracion', 'Responsable', 'Fecha', 'Estado'],
   NOTAS: ['ID_Periodo', 'Clave', 'Texto'],
+  REGLAS: ['Barrio', 'Orden', 'ID', 'Hallazgos', 'Titulo', 'Texto', 'Activo', 'Tipo', 'Concepto', 'Importe', 'Fuente', 'Fondo'],
   PARTICULARES: ['ID_Periodo', 'Concepto', 'Lotes', 'Valor', 'Fondo', 'Nota', 'Estado'],
   ADMINISTRACION: ['Barrio', 'Nombre', 'Matricula', 'CUIT', 'Contacto', 'Horario', 'Banco', 'CBU', 'Alias', 'Titular', 'Superficie_m2', 'Superficie_Estado', 'Superficie_Fuente'],
   CONTRATOS: ['Barrio', 'Proveedor', 'Objeto', 'Vence', 'Actualizacion', 'Nota'],
@@ -156,6 +157,16 @@ function configBarrio_(barrio) {
     administracion: adm ? { nombre: adm.Nombre, matricula: adm.Matricula || 'N/D', cuit: adm.CUIT || 'N/D', contacto: adm.Contacto || 'N/D', horario: adm.Horario || 'N/D', banco: adm.Banco || 'N/D', cbu: adm.CBU || 'N/D', alias: adm.Alias || 'N/D', titular: adm.Titular || 'N/D' } : undefined,
     superficieM2: adm && adm.Superficie_m2 ? { valor: Number(adm.Superficie_m2), estado: adm.Superficie_Estado === 'OK' ? 'OK' : 'REVISAR', fuente: adm.Superficie_Fuente } : undefined,
     contratos: contratos,
+    reglas: filas_('REGLAS')
+      .filter(function (r) { return r.Barrio === barrio; })
+      .sort(function (a, c) { return Number(a.Orden) - Number(c.Orden); })
+      .map(function (r) {
+        var x = { id: r.ID, hallazgos: lista_(r.Hallazgos), titulo: r.Titulo, texto: r.Texto, activo: siNo_(r.Activo), tipo: r.Tipo, concepto: r.Concepto };
+        if (texto_(r.Importe)) x.importe = texto_(r.Importe);
+        if (r.Fuente) x.fuente = r.Fuente;
+        if (r.Fondo) x.fondo = r.Fondo;
+        return x;
+      }),
     barrio: barrio,
     nombre: b.Nombre,
     tiposLote: filas_('COEFICIENTES_LOTE')
@@ -258,5 +269,6 @@ function cargarEjemploDesdeRepo() {
   var a = cfg.administracion || {};
   var sup = cfg.superficieM2 || {};
   agregar('ADMINISTRACION', [[B, a.nombre || '', a.matricula || '', a.cuit || '', a.contacto || '', a.horario || '', a.banco || '', a.cbu || '', a.alias || '', a.titular || '', sup.valor ? String(sup.valor) : '', sup.estado || '', sup.fuente || '']]);
+  agregar('REGLAS', (cfg.reglas || []).map(function (r, i) { return [B, String(i + 1), r.id, (r.hallazgos || []).join(', '), r.titulo, r.texto, r.activo ? 'SI' : 'NO', r.tipo, r.concepto, r.importe || '', r.fuente || '', r.fondo || '']; }));
   agregar('CONTRATOS', (cfg.contratos || []).map(function (c) { return [B, c.proveedor, c.objeto, c.vence || '', c.actualizacion || '', c.nota || '']; }));
 }

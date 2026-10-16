@@ -6,6 +6,7 @@ import { estadoPublicacion } from '../modelo/controles';
 import { AUDITORIA_API } from '../data/loader';
 import { TarjetaControl } from './Cuentas';
 import { EdicionComentarios } from '../expensa/Edicion';
+import { CargaLiquidacion } from '../expensa/Carga';
 
 export function Admin() {
   const e = useEstado();
@@ -33,7 +34,10 @@ export function Admin() {
         titulo="Antes de publicar"
         bajada="La liquidación se publica solo si todo cierra o si cada diferencia tiene una aclaración escrita."
       />
-      <EdicionComentarios />
+      <div className="cols">
+        <CargaLiquidacion />
+        <EdicionComentarios />
+      </div>
       <div className={`aviso ${est.puede ? 'ok' : 'bad'}`}>
         {!m ? (
           <b>Este mes no tiene la liquidación revisada: se publican solo los importes de la administración anterior.</b>

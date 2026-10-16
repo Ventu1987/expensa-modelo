@@ -33,6 +33,20 @@ export interface Criterio {
   estimado?: boolean;
 }
 
+/** Regla que se aplica sola cada mes: se busca el gasto por concepto. */
+export interface Regla {
+  id: string;
+  hallazgos: string[];
+  titulo: string;
+  texto: string;
+  activo: boolean;
+  tipo: 'FACTURA' | 'IMPORTE_SUPUESTO' | 'CAJA_CHICA_FISCAL' | 'A_EXTRAORDINARIO' | 'QUITAR';
+  concepto: string; // Concepto_Normalizado
+  importe?: string;
+  fuente?: string;
+  fondo?: string;
+}
+
 export interface ConfigFbv {
   gastoPropios: string;
   gastoComunes: string;
@@ -65,7 +79,9 @@ export interface ConfigPeriodo {
   novedades: Novedad[];
   comentarios: Record<string, string>;
   aclaraciones?: Record<string, string>;
-  notas?: Record<string, string>; // notas editables: por sección (RESUMEN, FLUJO…) o por hallazgo (H01…)
+  notas?: Record<string, string>;
+  automatico?: boolean; // armado solo con las reglas de cada mes, falta revisar
+  pendientes?: string[]; // qué falta revisar en un mes armado automáticamente // notas editables: por sección (RESUMEN, FLUJO…) o por hallazgo (H01…)
   particulares?: Particulares; // hoja ESTADO_PUBLICACION: control → aclaración escrita
   publicado?: string; // fecha de publicación, si ya se publicó
 }
@@ -117,6 +133,7 @@ export interface ConfigBarrio {
   cuenta: { titularActual: string; titularCorrecto: string; nota: string };
   periodos: Record<string, ConfigPeriodo>;
   administracion?: Administracion;
+  reglas?: Regla[];
   contratos?: Contrato[];
   superficieM2?: { valor: number; estado: 'OK' | 'REVISAR'; fuente: string };
 }

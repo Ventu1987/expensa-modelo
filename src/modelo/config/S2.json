@@ -501,5 +501,44 @@
     "valor": 11500,
     "estado": "REVISAR",
     "fuente": "Relevamiento de un propietario. Pedir el dato oficial."
-  }
+  },
+  "reglas": [
+    {
+      "id": "R-SEGURIDAD",
+      "hallazgos": [
+        "H23"
+      ],
+      "titulo": "Seguridad igual a la factura",
+      "texto": "Se liquida el importe de la factura del mes.",
+      "activo": true,
+      "tipo": "FACTURA",
+      "concepto": "Servicio de seguridad / vigilancia"
+    },
+    {
+      "id": "R-TELERED",
+      "hallazgos": [
+        "H09",
+        "H26"
+      ],
+      "titulo": "Telered al abono informado",
+      "texto": "Abono informado por escrito el 10/09/2026 ($ 100.000), hasta que llegue la factura.",
+      "activo": true,
+      "tipo": "IMPORTE_SUPUESTO",
+      "concepto": "Telered",
+      "importe": "100000",
+      "fuente": "Respuesta de la administración del 10/09/2026"
+    },
+    {
+      "id": "R-CAJA",
+      "hallazgos": [
+        "H15",
+        "H31"
+      ],
+      "titulo": "Caja chica solo con comprobantes fiscales",
+      "texto": "Quedan los tiques y facturas; salen los presupuestos y notas sin validez fiscal.",
+      "activo": true,
+      "tipo": "CAJA_CHICA_FISCAL",
+      "concepto": "Caja chica Fideicomiso"
+    }
+  ]
 }

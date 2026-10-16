@@ -65,6 +65,21 @@ function Encabezado({ L }: { L: Liquidacion }) {
           <span className="xs muted">Matrícula {adm?.matricula ?? 'N/D'}</span>
         </div>
       </div>
+      <div className="row no-print" style={{ gridColumn: '1 / -1', justifyContent: 'flex-end' }}>
+        <button className={`boton ${e.editando ? 'primario' : ''}`} onClick={() => e.setEditando(!e.editando)}>
+          {e.editando ? 'Terminar de comentar' : '✎ Agregar comentarios'}
+        </button>
+      </div>
+      {L.modelo.config.automatico && (
+        <div className="aviso small" style={{ gridColumn: '1 / -1' }}>
+          <b>Liquidación preliminar.</b> Se armó sola con la liquidación que llegó y las reglas de cada mes. Antes de publicarla falta revisar:
+          <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+            {(L.modelo.config.pendientes ?? []).map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {!L.esModelo && (
         <div className="aviso info small" style={{ gridColumn: '1 / -1' }}>
           Este mes todavía no tiene la liquidación revisada: se muestran los importes que liquidó la administración anterior, sin correcciones.
@@ -109,7 +124,7 @@ function Resumen({ L }: { L: Liquidacion }) {
           </div>
           {c.anterior !== null && (
             <p className="small">
-              El mes pasado fue <M c={c.anterior} />:{' '}
+              Respecto del mes anterior{' '}
               <b className={c.cuota > c.anterior ? 'warn' : 'ok'}>
                 {c.cuota > c.anterior ? 'sube' : 'baja'} {money(Math.abs(c.cuota - c.anterior))} ({pct(ratioOf(c.cuota - c.anterior, c.anterior), 1, { signo: true })})
               </b>
@@ -129,7 +144,7 @@ function Resumen({ L }: { L: Liquidacion }) {
             El barrio gastó <M c={L.total} />
             {difTotal !== null && (
               <>
-                , {difTotal >= 0 ? 'más' : 'menos'} que el mes pasado (<M c={L.totalAnterior} />, {pct(ratioOf(difTotal, L.totalAnterior || 1), 1, { signo: true })})
+, un {pct(ratioOf(Math.abs(difTotal), L.totalAnterior || 1), 1)} {difTotal >= 0 ? 'más' : 'menos'} que el mes anterior
               </>
             )}
             .
@@ -173,7 +188,7 @@ function Gastos({ L }: { L: Liquidacion }) {
       id="gastos"
       n={2}
       titulo="Gastos del mes"
-      bajada={`Cada gasto con su comprobante, comparado con ${L.previo ? 'el mes anterior' : 'el mes anterior (N/D)'}. Tocá el comprobante para verlo.`}
+      bajada="Cada gasto con su comprobante y cuánto cambió respecto del mes anterior. Tocá el comprobante para verlo."
       nota="GASTOS"
     >
       <div className="card tabla-gastos">
@@ -183,9 +198,11 @@ function Gastos({ L }: { L: Liquidacion }) {
               <tr>
                 <th>Concepto</th>
                 <th>Comprobante</th>
-                <th className="num">Mes anterior</th>
-                <th className="num">Este mes</th>
-                <th className="num">Var.</th>
+                <th className="num">Importe</th>
+                <th className="num th-var">
+                  Variación
+                  <span>vs. mes anterior</span>
+                </th>
                 <th>Por qué</th>
                 <th>Estado</th>
               </tr>
@@ -196,7 +213,6 @@ function Gastos({ L }: { L: Liquidacion }) {
                   <td colSpan={2}>
                     {r.nombre} <span className="xs muted num">{pct(r.participacion)}</span>
                   </td>
-                  <td className="num">{r.anterior === null || r.anterior === 0 ? '—' : money(r.anterior)}</td>
                   <td className="num">{money(r.actual)}</td>
                   <td className="num">
                     <Var r={r.variacion} anterior={r.anterior} />
@@ -220,7 +236,6 @@ function Gastos({ L }: { L: Liquidacion }) {
                     <td>
                       <Comprobante f={f} />
                     </td>
-                    <td className="num">{f.anterior === null ? '—' : money(f.anterior)}</td>
                     <td className="num">
                       <b>{money(f.actual)}</b>
                     </td>
@@ -240,7 +255,6 @@ function Gastos({ L }: { L: Liquidacion }) {
             <tbody>
               <tr className="total">
                 <td colSpan={2}>Total de gastos del mes</td>
-                <td className="num">{L.totalAnterior === null ? '—' : money(L.totalAnterior)}</td>
                 <td className="num">{money(L.total)}</td>
                 <td className="num">
                   <Var r={L.totalAnterior ? ratioOf(L.total - L.totalAnterior, L.totalAnterior) : null} anterior={L.totalAnterior} />
@@ -268,10 +282,11 @@ function Gastos({ L }: { L: Liquidacion }) {
                     <b className="num">{money(f.actual)}</b>
                   </div>
                   <div className="between xs muted">
-                    <span>
-                      Mes anterior {f.anterior === null ? '—' : money(f.anterior)} · {f.estado.toLowerCase()}
+                    <span>{f.estado}</span>
+                    <span className="row" style={{ gap: 4, flexWrap: 'nowrap' }}>
+                      <span>vs. mes anterior</span>
+                      <Var r={f.variacion} nuevo={f.nuevo} anterior={f.anterior} />
                     </span>
-                    <Var r={f.variacion} nuevo={f.nuevo} anterior={f.anterior} />
                   </div>
                   <div className="small">
                     <Porque f={f} />
@@ -283,8 +298,12 @@ function Gastos({ L }: { L: Liquidacion }) {
           ))}
           <div className="between rubro-cel">
             <b>Total de gastos del mes</b>
-            <b className="num">{money(L.total)}</b>
+            <span className="row" style={{ flexWrap: 'nowrap' }}>
+              <b className="num">{money(L.total)}</b>
+              <Var r={L.totalAnterior ? ratioOf(L.total - L.totalAnterior, L.totalAnterior) : null} anterior={L.totalAnterior} />
+            </span>
           </div>
+          <span className="xs muted">La variación de cada rubro y de cada gasto es respecto del mes anterior.</span>
         </div>
         <div className="leyenda">
           <span>
@@ -326,7 +345,10 @@ function Prorrateo({ L }: { L: Liquidacion }) {
                 <th className="num">Lotes</th>
                 <th className="num">Coeficiente</th>
                 <th className="num">Cuota</th>
-                <th className="num">Mes anterior</th>
+                <th className="num th-var">
+                  Variación
+                  <span>vs. mes anterior</span>
+                </th>
                 {res && <th className="num">Reserva</th>}
                 <th className="num">Subtotal</th>
               </tr>
@@ -342,7 +364,9 @@ function Prorrateo({ L }: { L: Liquidacion }) {
                   <td className="num" data-l="Cuota">
                     <b>{money(c.cuota)}</b>
                   </td>
-                  <td className="num" data-l="Mes anterior">{c.anterior === null ? '—' : money(c.anterior)}</td>
+                  <td className="num" data-l="Variación vs. mes anterior">
+                    <Var r={c.anterior ? ratioOf(c.cuota - c.anterior, c.anterior) : null} anterior={c.anterior} />
+                  </td>
                   {res && <td className="num" data-l="Reserva">{money(c.reserva)}</td>}
                   <td className="num" data-l="Subtotal">{money(c.subtotal)}</td>
                 </tr>
