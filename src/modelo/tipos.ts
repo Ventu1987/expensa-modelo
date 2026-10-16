@@ -64,8 +64,39 @@ export interface ConfigPeriodo {
   creditos: ItemCuenta[];
   novedades: Novedad[];
   comentarios: Record<string, string>;
-  aclaraciones?: Record<string, string>; // hoja ESTADO_PUBLICACION: control → aclaración escrita
+  aclaraciones?: Record<string, string>;
+  notas?: Record<string, string>; // notas editables: por sección (RESUMEN, FLUJO…) o por hallazgo (H01…)
+  particulares?: Particulares; // hoja ESTADO_PUBLICACION: control → aclaración escrita
   publicado?: string; // fecha de publicación, si ya se publicó
+}
+
+export interface Particulares {
+  concepto: string; // p. ej. "Canon de obra"
+  lotes: number | null; // cuántos lotes lo pagan (null = N/D)
+  valor: string | null; // valor por lote, si es fijo
+  fondo: string; // a qué fondo va
+  nota: string;
+  estado: 'OK' | 'REVISAR';
+}
+
+export interface Administracion {
+  nombre: string;
+  matricula: string;
+  cuit: string;
+  contacto: string;
+  horario: string;
+  banco: string;
+  cbu: string;
+  alias: string;
+  titular: string;
+}
+
+export interface Contrato {
+  proveedor: string;
+  objeto: string;
+  vence: string | null;
+  actualizacion: string;
+  nota: string;
 }
 
 export interface TipoLote {
@@ -85,4 +116,7 @@ export interface ConfigBarrio {
   reserva: { pct: string; activa: boolean; nota: string };
   cuenta: { titularActual: string; titularCorrecto: string; nota: string };
   periodos: Record<string, ConfigPeriodo>;
+  administracion?: Administracion;
+  contratos?: Contrato[];
+  superficieM2?: { valor: number; estado: 'OK' | 'REVISAR'; fuente: string };
 }

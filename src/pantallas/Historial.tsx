@@ -4,7 +4,7 @@ import { money, ratioOf } from '../lib/money';
 import { mesCorto } from '../lib/fecha';
 import { historial } from '../modelo/historial';
 
-function Grafico({ puntos }: { puntos: { mes: string; a: number; b: number | null }[] }) {
+export function Grafico({ puntos, etiquetas = ['Liquidada', 'Modelo'] }: { puntos: { mes: string; a: number; b: number | null }[]; etiquetas?: [string, string] }) {
   const W = 640;
   const H = 240;
   const pad = { l: 8, r: 8, t: 16, b: 28 };
@@ -36,11 +36,11 @@ function Grafico({ puntos }: { puntos: { mes: string; a: number; b: number | nul
       <div className="leyenda">
         <span>
           <i style={{ background: 'var(--muted)' }} />
-          Liquidada
+          {etiquetas[0]}
         </span>
         <span>
           <i style={{ background: 'var(--accent)' }} />
-          Modelo
+          {etiquetas[1]}
         </span>
       </div>
     </div>

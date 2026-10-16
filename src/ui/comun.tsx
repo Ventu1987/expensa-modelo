@@ -96,9 +96,9 @@ export function Hallazgos({ ids }: { ids: string[] }) {
   return (
     <span className="row">
       {ids.map((h) => (
-        <a key={h} className="chip accent" href={`#/novedades?h=${h}`} style={{ textDecoration: 'none' }}>
+        <span key={h} className="chip accent">
           {h}
-        </a>
+        </span>
       ))}
     </span>
   );

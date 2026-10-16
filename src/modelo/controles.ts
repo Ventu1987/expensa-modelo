@@ -130,7 +130,7 @@ export function calcularControles(datos: Datos, idPeriodo: string, cuentas: Cuen
         difPend === 0
           ? 'Cada peso que se debe tiene su gasto.'
           : explicaPend
-            ? 'Lo que se debe tiene detalle: la diferencia es una deuda anterior que en el modelo se muestra en su propia línea.'
+            ? 'Lo que se debe tiene detalle: la diferencia es una deuda anterior que se muestra en su propia línea.'
             : 'Hay plata que se debe sin detalle.',
       detalle: `Pendientes informados ${cuentas.pendientesInformado / 100}; gastos PENDIENTE del mes ${cuentas.pendientesDetalle / 100}; diferencia ${difPend / 100}.${
         deudaSinImporte.length ? ` Además hay ${deudaSinImporte.length} deuda(s) sin importe informado (N/D).` : ''
@@ -150,7 +150,7 @@ export function calcularControles(datos: Datos, idPeriodo: string, cuentas: Cuen
     ctl({
       id: 'PATRIMONIO',
       titulo: 'El patrimonio es la suma de sus partes',
-      simple: difPat === 0 ? 'Lo que tiene el barrio suma bien.' : 'El total de lo que tiene el barrio no es la suma de sus partes. El modelo publica la suma.',
+      simple: difPat === 0 ? 'Lo que tiene el barrio suma bien.' : 'El total de lo que tiene el barrio no es la suma de sus partes. Esta liquidación publica la suma.',
       detalle: `Informado ${cuentas.patrimonioInformado / 100}; suma de componentes ${cuentas.patrimonioCalculado / 100}.`,
       estado: difPat === 0 ? 'OK' : 'PROBLEMA',
       bloquea: true,
@@ -197,7 +197,7 @@ export function calcularControles(datos: Datos, idPeriodo: string, cuentas: Cuen
       obtenido: sinGasto.reduce((s, e) => s - e.importe, 0),
       hallazgos: ['H14'],
       filas: sinGasto.map((e) => ({
-        texto: `${conceptoPublicable(e.concepto)} · ${e.tipo.toLowerCase()}${creditosDoc.has(-e.importe) ? ' · reclamado en el modelo' : ''}`,
+        texto: `${conceptoPublicable(e.concepto)} · ${e.tipo.toLowerCase()}${creditosDoc.has(-e.importe) ? ' · se reclama' : ''}`,
         importe: -e.importe,
         estado: 'PROBLEMA' as EstadoControl,
       })),

@@ -6,6 +6,7 @@ import { calcularModelo, periodosDe, type OpcionesModelo, type ResultadoModelo }
 import { calcularCuentas, type Cuentas } from './modelo/cuentas';
 import { calcularControles, type Control } from './modelo/controles';
 import S2 from './modelo/config/S2.json';
+import { armarLiquidacion, type Ediciones, type Liquidacion } from './expensa/liquidacion';
 
 export const BARRIOS = [
   { id: 'S2', nombre: 'Senderos II' },
@@ -16,7 +17,7 @@ export const BARRIOS = [
 const CONFIGS: Record<string, ConfigBarrio> = { S2: S2 as unknown as ConfigBarrio };
 
 // Planilla del modelo (Apps Script propio). Si no está configurada o no responde, se usa la copia del repo.
-const MODELO_API = import.meta.env?.VITE_MODELO_API as string | undefined;
+export const MODELO_API = import.meta.env?.VITE_MODELO_API as string | undefined;
 
 async function cargarConfig(barrio: string): Promise<ConfigBarrio | null> {
   if (MODELO_API) {
@@ -34,7 +35,7 @@ async function cargarConfig(barrio: string): Promise<ConfigBarrio | null> {
 }
 
 /** Para barrios sin modelo: solo los datos oficiales, sin criterios. */
-function configOficial(datos: Datos, barrio: string): ConfigBarrio {
+export function configOficial(datos: Datos, barrio: string): ConfigBarrio {
   const ps = periodosDe(datos, barrio);
   const ult = ps[ps.length - 1];
   const b = datos.sheets.BARRIOS.find((x) => x.ID_Barrio === barrio);
@@ -105,6 +106,23 @@ export interface Estado {
   ruta: Ruta;
   comprobantesDe: string | null;
   verComprobantes: (idGasto: string | null) => void;
+  liquidacion: Liquidacion | null;
+  editando: boolean;
+  setEditando: (v: boolean) => void;
+  ediciones: Ediciones;
+  editar: (tipo: 'porque' | 'notas', clave: string, texto: string) => void;
+  descartarEdiciones: () => void;
+  cambios: number;
+}
+
+const vacias = (): Ediciones => ({ porque: {}, notas: {} });
+function leerEdiciones(id: string): Ediciones {
+  try {
+    const t = localStorage.getItem(`expensa-modelo:ediciones:${id}`);
+    return t ? { ...vacias(), ...JSON.parse(t) } : vacias();
+  } catch {
+    return vacias();
+  }
 }
 
 const Ctx = createContext<Estado | null>(null);
@@ -122,6 +140,8 @@ export function Proveedor({ children }: { children: ReactNode }) {
   const [tema, setTemaS] = useState<Tema>(leerTema);
   const [ruta, setRuta] = useState<Ruta>(leerRuta);
   const [comprobantesDe, verComprobantes] = useState<string | null>(null);
+  const [editando, setEditando] = useState(false);
+  const [ediciones, setEdiciones] = useState<Ediciones>(vacias);
 
   useEffect(() => {
     const f = () => setRuta(leerRuta());
@@ -188,6 +208,23 @@ export function Proveedor({ children }: { children: ReactNode }) {
   const cuentas = useMemo(() => (datos && idPeriodo ? calcularCuentas(datos, idPeriodo, cfg?.periodos[idPeriodo]) : null), [datos, idPeriodo, cfg]);
   const controles = useMemo(() => (datos && cuentas && idPeriodo ? calcularControles(datos, idPeriodo, cuentas, modelo) : []), [datos, cuentas, idPeriodo, modelo]);
 
+  useEffect(() => {
+    if (idPeriodo) setEdiciones(leerEdiciones(idPeriodo));
+  }, [idPeriodo]);
+  const guardarBorrador = (ed: Ediciones) => {
+    setEdiciones(ed);
+    try {
+      localStorage.setItem(`expensa-modelo:ediciones:${idPeriodo}`, JSON.stringify(ed));
+    } catch {
+      /* el borrador vale solo mientras la página está abierta */
+    }
+  };
+  const oficialCfg = useMemo(() => (datos ? configOficial(datos, barrio) : null), [datos, barrio]);
+  const liquidacion = useMemo(
+    () => (datos && oficialCfg && idPeriodo ? armarLiquidacion(datos, cfg, oficialCfg, barrio, idPeriodo, { ...opciones, lote: tipoLote }, ediciones) : null),
+    [datos, cfg, oficialCfg, barrio, idPeriodo, opciones, tipoLote, ediciones],
+  );
+
   const e: Estado = {
     carga,
     datos,
@@ -233,6 +270,13 @@ export function Proveedor({ children }: { children: ReactNode }) {
     ruta,
     comprobantesDe,
     verComprobantes,
+    liquidacion,
+    editando,
+    setEditando,
+    ediciones,
+    editar: (tipo, clave, texto) => guardarBorrador({ ...ediciones, [tipo]: { ...ediciones[tipo], [clave]: texto } }),
+    descartarEdiciones: () => guardarBorrador(vacias()),
+    cambios: Object.keys(ediciones.porque).length + Object.keys(ediciones.notas).length,
   };
   return <Ctx.Provider value={e}>{children}</Ctx.Provider>;
 }

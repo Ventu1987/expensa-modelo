@@ -177,7 +177,7 @@ describe('Senderos II · septiembre 2026', () => {
     const ctr = calcularControles(datos, SEP, c, m);
     const sg = ctr.find((x) => x.id === 'SIN_GASTO')!;
     expect(sg.estado).toBe('PROBLEMA');
-    expect(sg.filas!.some((f) => f.texto.includes('reclamado en el modelo'))).toBe(true);
+    expect(sg.filas!.some((f) => f.texto.includes('se reclama'))).toBe(true);
   });
 });
 

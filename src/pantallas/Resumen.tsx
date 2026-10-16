@@ -21,8 +21,8 @@ export function Resumen() {
   const texto = [
     `*${e.cfgVista?.nombre} · Expensa de ${mesLargo(p.Mes).toLowerCase()}*`,
     m
-      ? `${lote}: liquidada ${money(v.lotes[i].oficial)} · modelo ${money(v.lotes[i].modelo)} (${money(v.lotes[i].diferencia, { signo: true })}, ${pct(ratioOf(v.lotes[i].diferencia, v.lotes[i].oficial), 2, { signo: true })}).`
-      : `${lote}: ${money(o.lotes[i].oficial)} (modelo pendiente).`,
+      ? `${lote}: ${money(v.lotes[i].modelo)}. La administración anterior había liquidado ${money(v.lotes[i].oficial)} (${money(v.lotes[i].diferencia, { signo: true })}, ${pct(ratioOf(v.lotes[i].diferencia, v.lotes[i].oficial), 2, { signo: true })}).`
+      : `${lote}: ${money(o.lotes[i].oficial)} (liquidación sin revisar).`,
     `Vence el ${fecha(p.Fecha_Vencimiento)}.`,
     ...(difs.length ? ['', '*Lo que más cambia en tu lote:*', ...difs.map((d) => `• ${d.criterio.titulo}: ${money(d.porLote[i], { signo: true })}`)] : []),
     '',
@@ -77,11 +77,11 @@ export function Resumen() {
           </span>
           <div className="grilla-montos">
             <div>
-              <span>Liquidada</span>
+              <span>Liquidación anterior</span>
               <M c={v.lotes[i].oficial} />
             </div>
             <div>
-              <span>Modelo</span>
+              <span>Esta liquidación</span>
               {m ? <b><M c={v.lotes[i].modelo} /></b> : <span className="muted">pendiente</span>}
             </div>
             <div>

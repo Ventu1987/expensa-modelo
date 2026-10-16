@@ -29,7 +29,7 @@ export function Modelo() {
   if (!m) {
     return (
       <>
-        <Cabecera eyebrow={`${e.cfgVista?.nombre} · ${mesNombre(p.Mes)}`} titulo="Actual contra modelo" />
+        <Cabecera eyebrow={`${e.cfgVista?.nombre} · ${mesNombre(p.Mes)}`} titulo="Diferencias con la liquidación anterior" />
         <AvisoPendiente />
       </>
     );
@@ -43,8 +43,8 @@ export function Modelo() {
     <>
       <Cabecera
         eyebrow={`${e.cfgVista?.nombre} · ${mesNombre(p.Mes)}`}
-        titulo="Actual contra modelo"
-        bajada="Cada corrección es un criterio con nombre. Apagalo y mirá cuánto cambia tu expensa."
+        titulo="Diferencias con la liquidación anterior"
+        bajada="Cada corrección es un criterio con nombre y su documento. Se puede apagar para ver cuánto cambia la cuota."
       />
       <SelectorLote />
       <div className="cols">
@@ -55,7 +55,7 @@ export function Modelo() {
               <M c={l.oficial} />
             </div>
             <div>
-              <span>Modelo</span>
+              <span>Esta liquidación</span>
               <b>
                 <M c={l.modelo} />
               </b>
@@ -80,7 +80,7 @@ export function Modelo() {
         <Card titulo="Fondo de reserva" bajada="Supuesto para la asamblea. No es un gasto: se junta aparte.">
           <div className="between">
             <span>
-              Aporte del <P r={m.reserva.pct} d={0} /> del gasto del modelo
+              Aporte del <P r={m.reserva.pct} d={0} /> del gasto del mes
             </span>
             <Switch checked={m.reserva.activa} onChange={(v) => e.setReserva(v)} label="Fondo de reserva" />
           </div>
@@ -93,10 +93,10 @@ export function Modelo() {
           )}
         </Card>
 
-        <Card titulo="De la expensa liquidada a la expensa modelo" bajada="Efecto de cada criterio en tu lote, en el orden en que se aplica." className="span-2">
+        <Card titulo="De la cuota anterior a la de esta liquidación" bajada="Efecto de cada criterio en tu lote, en el orden en que se aplica." className="span-2">
           <div className="lista">
             <div className="between">
-              <b>Expensa liquidada</b>
+              <b>Cuota liquidada por la administración anterior</b>
               <b>
                 <M c={l.oficial} />
               </b>
@@ -144,7 +144,7 @@ export function Modelo() {
               <Dif c={l.ajusteRedondeo} />
             </div>
             <div className="between">
-              <b>Expensa modelo</b>
+              <b>Cuota de esta liquidación</b>
               <b>
                 <M c={l.modelo} />
               </b>
@@ -152,7 +152,7 @@ export function Modelo() {
           </div>
           <Tec>
             <span>
-              Expensa modelo = gasto del modelo × coeficiente, redondeado al centavo. El efecto por lote de cada criterio se redondea por separado; el ajuste por redondeo junta esos
+              Cuota = gasto del mes × coeficiente, redondeado al centavo. El efecto por lote de cada criterio se redondea por separado; el ajuste por redondeo junta esos
               centavos.
             </span>
             <span>

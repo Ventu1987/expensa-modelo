@@ -111,6 +111,11 @@ export interface Hallazgo {
   Barrios: string;
   Estado: string;
   Publicable: string;
+  Monto_Total?: number | string;
+  Impacto_S1?: number | string;
+  Impacto_S2?: number | string;
+  Impacto_LH?: number | string;
+  Que_Pedir?: string;
 }
 
 export interface Datos {

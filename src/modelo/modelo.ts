@@ -119,6 +119,7 @@ export interface OpcionesModelo {
   apagados?: Set<string>; // criterios que el usuario apagó
   encendidos?: Set<string>; // criterios apagados por defecto que el usuario prendió
   reserva?: boolean; // forzar el fondo de reserva
+  lote?: number; // tipo de lote elegido (para mostrar efectos)
 }
 
 export function criterioActivo(c: Criterio, op: OpcionesModelo): boolean {

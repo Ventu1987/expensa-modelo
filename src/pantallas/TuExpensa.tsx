@@ -23,7 +23,7 @@ export function AvisoPendiente() {
   if (e.modelo) return null;
   return (
     <div className="aviso info">
-      <b>Modelo pendiente.</b> Para {e.cfgVista?.nombre} en {mesLargo(e.oficial?.periodo.Mes ?? '')} todavía no se cargaron los criterios del modelo. Se muestran los datos oficiales, sin correcciones.
+      <b>Sin revisar.</b> {e.cfgVista?.nombre} en {mesLargo(e.oficial?.periodo.Mes ?? '')} todavía no tiene la liquidación revisada. Se muestran los importes de la administración anterior, sin correcciones.
     </div>
   );
 }

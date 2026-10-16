@@ -1,34 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BARRIOS, useEstado, type Tema } from './estado';
 import { Icono } from './ui/comun';
 import { mesLargo } from './lib/fecha';
-import { TuExpensa } from './pantallas/TuExpensa';
-import { CadaPeso } from './pantallas/CadaPeso';
-import { Reparto } from './pantallas/Reparto';
-import { CuentasPantalla } from './pantallas/Cuentas';
-import { Morosidad } from './pantallas/Morosidad';
-import { Obras } from './pantallas/Obras';
+import { Expensa } from './expensa/Expensa';
+import { SECCIONES, irA } from './expensa/piezas';
 import { Modelo } from './pantallas/Modelo';
-import { Historial } from './pantallas/Historial';
-import { Novedades } from './pantallas/Novedades';
 import { Resumen } from './pantallas/Resumen';
 import { Admin } from './pantallas/Admin';
 import { Comprobantes } from './pantallas/Comprobantes';
 
 const PAGINAS = [
-  { id: 'expensa', titulo: 'Tu expensa', corto: 'Expensa', C: TuExpensa },
-  { id: 'peso', titulo: 'De dónde sale cada peso', corto: 'Cada peso', C: CadaPeso },
-  { id: 'cuentas', titulo: 'Estado de cuentas', corto: 'Cuentas', C: CuentasPantalla },
-  { id: 'modelo', titulo: 'Actual contra modelo', corto: 'Modelo', C: Modelo },
-  { id: 'reparto', titulo: 'Reparto del Fideicomiso', corto: 'Reparto', C: Reparto },
-  { id: 'morosidad', titulo: 'Morosidad', corto: 'Morosidad', C: Morosidad },
-  { id: 'obras', titulo: 'Obras y extraordinarios', corto: 'Obras', C: Obras },
-  { id: 'historial', titulo: 'Historial', corto: 'Historial', C: Historial },
-  { id: 'novedades', titulo: 'Novedades', corto: 'Novedades', C: Novedades },
-  { id: 'resumen', titulo: 'Resumen para WhatsApp', corto: 'Resumen', C: Resumen },
-  { id: 'admin', titulo: 'Modo administrador', corto: 'Admin', C: Admin },
+  { id: 'expensa', titulo: 'Liquidación del mes', corto: 'Expensa', icono: 'resumen', C: Expensa },
+  { id: 'whatsapp', titulo: 'Resumen para WhatsApp', corto: 'WhatsApp', icono: 'novedades', C: Resumen },
+  { id: 'anexo', titulo: 'Anexo: diferencias con la liquidación anterior', corto: 'Anexo', icono: 'modelo', C: Modelo },
+  { id: 'admin', titulo: 'Administración', corto: 'Admin', icono: 'admin', C: Admin },
 ];
-const INFERIOR = ['expensa', 'peso', 'cuentas', 'modelo'];
 
 function Selectores() {
   const e = useEstado();
@@ -46,7 +32,7 @@ function Selectores() {
         {[...e.periodos].reverse().map((p) => (
           <option key={p.id} value={p.id}>
             {mesLargo(p.mes)}
-            {e.cfg?.periodos[p.id] ? '' : ' · oficial'}
+            {e.cfg?.periodos[p.id] ? '' : ' · sin revisar'}
           </option>
         ))}
       </select>
@@ -72,32 +58,83 @@ function SelectorTema() {
   );
 }
 
+function imprimir() {
+  try {
+    window.print();
+  } catch {
+    alert('Este visor no deja imprimir. Abrí la app publicada y probá de nuevo.');
+  }
+}
+
+/** Sección visible, para marcarla en el índice. */
+function useSeccionActiva(activo: boolean) {
+  const [sec, setSec] = useState('resumen');
+  useEffect(() => {
+    if (!activo || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(
+      (ents) => {
+        const v = ents.filter((x) => x.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (v) setSec(v.target.id);
+      },
+      { rootMargin: '-20% 0px -70% 0px' },
+    );
+    SECCIONES.forEach(([id]) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+    return () => io.disconnect();
+  });
+  return sec;
+}
+
 export function App() {
   const e = useEstado();
-  const [mas, setMas] = useState(false);
+  const [indice, setIndice] = useState(false);
   const pag = PAGINAS.find((p) => p.id === e.ruta.pagina) ?? PAGINAS[0];
   const q = e.idPeriodo ? `?p=${e.idPeriodo}` : '';
   const Pagina = pag.C;
+  const enExpensa = pag.id === 'expensa';
+  const sec = useSeccionActiva(enExpensa && !!e.liquidacion);
+  const ir = (id: string) => {
+    setIndice(false);
+    if (!enExpensa) {
+      window.location.hash = `#/expensa${q}`;
+      setTimeout(() => irA(id), 120);
+    } else irA(id);
+  };
 
   return (
     <div className="app">
       <aside className="lateral">
         <div className="marca">
           <span>Fideicomiso Bella Vista</span>
-          <b>Expensa modelo</b>
+          <b>Expensas</b>
         </div>
         <div className="stack-s">
           <Selectores />
         </div>
-        <nav aria-label="Secciones">
+        <nav aria-label="Páginas">
           {PAGINAS.map((p) => (
             <a key={p.id} href={`#/${p.id}${q}`} className={p.id === pag.id ? 'activo' : ''} aria-current={p.id === pag.id ? 'page' : undefined}>
-              <Icono n={p.id} />
+              <Icono n={p.icono} />
               {p.titulo}
             </a>
           ))}
         </nav>
+        {enExpensa && (
+          <nav aria-label="Índice" className="indice">
+            <span className="xs muted">Índice</span>
+            {SECCIONES.map(([id, t], k) => (
+              <button key={id} className={sec === id ? 'activo' : ''} onClick={() => ir(id)}>
+                <span className="num xs muted">{String(k + 1).padStart(2, '0')}</span> {t}
+              </button>
+            ))}
+          </nav>
+        )}
         <div style={{ marginTop: 'auto' }} className="stack-s">
+          <button className="boton" onClick={imprimir}>
+            Descargar PDF
+          </button>
           <SelectorTema />
           <span className="xs muted">{e.carga ? (e.carga.origen === 'api' ? 'Datos en vivo de la auditoría' : 'Copia de los datos de la auditoría') : 'Cargando datos…'}</span>
         </div>
@@ -106,7 +143,7 @@ export function App() {
       <header className="top">
         <div className="marca">
           <span>Bella Vista</span>
-          <b>Expensa modelo</b>
+          <b>Expensas</b>
         </div>
         <div className="selects">
           <Selectores />
@@ -114,21 +151,25 @@ export function App() {
       </header>
 
       <main className="contenido">
-        {!e.carga ? (
-          <p className="muted">Cargando los datos de la auditoría…</p>
-        ) : !e.idPeriodo ? (
-          <div className="aviso">
-            {BARRIOS.find((b) => b.id === e.barrio)?.nombre}: N/D. La auditoría todavía no cargó liquidaciones de este barrio.
+        {e.editando && (
+          <div className="aviso info small no-print barra-edicion">
+            <span>
+              <b>Modo edición.</b> {e.cambios} cambio{e.cambios === 1 ? '' : 's'} sin guardar.
+            </span>
+            <a href={`#/admin${q}`}>Guardar o terminar</a>
           </div>
+        )}
+        {!e.carga ? (
+          <p className="muted">Cargando los datos…</p>
+        ) : !e.idPeriodo ? (
+          <div className="aviso">{BARRIOS.find((b) => b.id === e.barrio)?.nombre}: N/D. Todavía no hay liquidaciones cargadas de este barrio.</div>
         ) : (
           <Pagina />
         )}
         <footer className="xs muted no-print stack-s" style={{ paddingTop: 8 }}>
-          <span>
-            Las observaciones son indicadores para revisar, no acusaciones. Fuente: liquidaciones oficiales y documentos cargados en la auditoría. {e.carga?.detalle}
-          </span>
+          <span>{e.carga?.detalle}</span>
           <div className="row" style={{ justifyContent: 'space-between' }}>
-            <span>N/D = dato que falta · REVISAR = dato dudoso</span>
+            <span>N/D = dato que falta · REVISAR = dato a confirmar</span>
             <span className="top-tema">
               <SelectorTema />
             </span>
@@ -136,29 +177,39 @@ export function App() {
         </footer>
       </main>
 
-      <nav className="nav-inferior" aria-label="Secciones principales">
-        {INFERIOR.map((id) => {
-          const p = PAGINAS.find((x) => x.id === id)!;
-          return (
-            <a key={id} href={`#/${id}${q}`} className={pag.id === id ? 'activo' : ''}>
-              <Icono n={id} />
-              {p.corto}
-            </a>
-          );
-        })}
-        <button className={!INFERIOR.includes(pag.id) ? 'activo' : ''} onClick={() => setMas(true)}>
-          <Icono n="mas" />
-          Más
+      <nav className="nav-inferior no-print" aria-label="Navegación">
+        <a href={`#/expensa${q}`} className={enExpensa ? 'activo' : ''}>
+          <Icono n="resumen" />
+          Expensa
+        </a>
+        <button onClick={() => setIndice(true)}>
+          <Icono n="historial" />
+          Índice
         </button>
+        <button onClick={imprimir}>
+          <Icono n="obras" />
+          PDF
+        </button>
+        <a href={`#/whatsapp${q}`} className={pag.id === 'whatsapp' ? 'activo' : ''}>
+          <Icono n="novedades" />
+          WhatsApp
+        </a>
+        <a href={`#/admin${q}`} className={pag.id === 'admin' || pag.id === 'anexo' ? 'activo' : ''}>
+          <Icono n="admin" />
+          Admin
+        </a>
       </nav>
-      {mas && (
-        <div className="hoja-mas" onClick={() => setMas(false)}>
-          <div onClick={(ev) => ev.stopPropagation()}>
-            {PAGINAS.filter((p) => !INFERIOR.includes(p.id)).map((p) => (
-              <a key={p.id} href={`#/${p.id}${q}`} onClick={() => setMas(false)}>
-                {p.titulo}
-              </a>
+      {indice && (
+        <div className="hoja-mas" onClick={() => setIndice(false)}>
+          <div onClick={(ev) => ev.stopPropagation()} className="hoja-indice">
+            {SECCIONES.map(([id, t], k) => (
+              <button key={id} onClick={() => ir(id)}>
+                <span className="num xs muted">{String(k + 1).padStart(2, '0')}</span> {t}
+              </button>
             ))}
+            <a href={`#/anexo${q}`} onClick={() => setIndice(false)}>
+              Anexo: diferencias con la liquidación anterior
+            </a>
           </div>
         </div>
       )}

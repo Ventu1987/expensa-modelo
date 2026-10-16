@@ -5,6 +5,7 @@ import { mesLargo } from '../lib/fecha';
 import { estadoPublicacion } from '../modelo/controles';
 import { AUDITORIA_API } from '../data/loader';
 import { TarjetaControl } from './Cuentas';
+import { EdicionComentarios } from '../expensa/Edicion';
 
 export function Admin() {
   const e = useEstado();
@@ -28,13 +29,14 @@ export function Admin() {
   return (
     <>
       <Cabecera
-        eyebrow={`Modo administrador · ${e.cfgVista?.nombre} · ${mesLargo(p.Mes)}`}
-        titulo="¿Se puede publicar?"
-        bajada="La expensa modelo se publica solo si todo cierra o si cada diferencia tiene una aclaración escrita."
+        eyebrow={`Administración · ${e.cfgVista?.nombre} · ${mesLargo(p.Mes)}`}
+        titulo="Antes de publicar"
+        bajada="La liquidación se publica solo si todo cierra o si cada diferencia tiene una aclaración escrita."
       />
+      <EdicionComentarios />
       <div className={`aviso ${est.puede ? 'ok' : 'bad'}`}>
         {!m ? (
-          <b>No hay modelo cargado para este mes: se publican solo los datos oficiales.</b>
+          <b>Este mes no tiene la liquidación revisada: se publican solo los importes de la administración anterior.</b>
         ) : est.puede ? (
           <b>Se puede publicar. {est.aclarados.length ? `${est.aclarados.length} control(es) con aclaración escrita.` : 'Todos los controles cierran.'}</b>
         ) : (

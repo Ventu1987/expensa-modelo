@@ -26,6 +26,10 @@ var HOJAS = {
   COMENTARIOS: ['ID_Periodo', 'Concepto_Normalizado', 'Comentario'],
   ACTAS: ['Fecha', 'Barrio', 'Asamblea', 'Tema', 'Decision', 'Enlace'],
   ESTADO_PUBLICACION: ['ID_Periodo', 'Control', 'Aclaracion', 'Responsable', 'Fecha', 'Estado'],
+  NOTAS: ['ID_Periodo', 'Clave', 'Texto'],
+  PARTICULARES: ['ID_Periodo', 'Concepto', 'Lotes', 'Valor', 'Fondo', 'Nota', 'Estado'],
+  ADMINISTRACION: ['Barrio', 'Nombre', 'Matricula', 'CUIT', 'Contacto', 'Horario', 'Banco', 'CBU', 'Alias', 'Titular', 'Superficie_m2', 'Superficie_Estado', 'Superficie_Fuente'],
+  CONTRATOS: ['Barrio', 'Proveedor', 'Objeto', 'Vence', 'Actualizacion', 'Nota'],
 };
 
 /** Crea las hojas que falten, con sus encabezados. Correr una vez. */
@@ -121,6 +125,17 @@ function configBarrio_(barrio) {
   porPeriodo('COMENTARIOS').forEach(function (r) {
     asegurar(r.ID_Periodo).comentarios[r.Concepto_Normalizado] = r.Comentario;
   });
+  porPeriodo('NOTAS').forEach(function (r) {
+    var p = asegurar(r.ID_Periodo);
+    p.notas = p.notas || {};
+    p.notas[r.Clave] = r.Texto;
+  });
+  porPeriodo('PARTICULARES').forEach(function (r) {
+    asegurar(r.ID_Periodo).particulares = {
+      concepto: r.Concepto, lotes: r.Lotes === '' || /^n\/d$/i.test(r.Lotes) ? null : Number(r.Lotes),
+      valor: texto_(r.Valor), fondo: r.Fondo || 'N/D', nota: r.Nota, estado: r.Estado === 'OK' ? 'OK' : 'REVISAR',
+    };
+  });
   porPeriodo('ESTADO_PUBLICACION').forEach(function (r) {
     var p = asegurar(r.ID_Periodo);
     if (r.Control === 'PUBLICADO') p.publicado = r.Fecha;
@@ -132,7 +147,15 @@ function configBarrio_(barrio) {
     coefFbv[r.Barrio] = { propios: texto_(r.Propios), comunes: texto_(r.Comunes) };
   });
 
+  var adm = filas_('ADMINISTRACION').filter(function (r) { return r.Barrio === barrio; })[0];
+  var contratos = filas_('CONTRATOS').filter(function (r) { return r.Barrio === barrio; }).map(function (r) {
+    return { proveedor: r.Proveedor, objeto: r.Objeto, vence: r.Vence || null, actualizacion: r.Actualizacion || 'N/D', nota: r.Nota };
+  });
+
   return {
+    administracion: adm ? { nombre: adm.Nombre, matricula: adm.Matricula || 'N/D', cuit: adm.CUIT || 'N/D', contacto: adm.Contacto || 'N/D', horario: adm.Horario || 'N/D', banco: adm.Banco || 'N/D', cbu: adm.CBU || 'N/D', alias: adm.Alias || 'N/D', titular: adm.Titular || 'N/D' } : undefined,
+    superficieM2: adm && adm.Superficie_m2 ? { valor: Number(adm.Superficie_m2), estado: adm.Superficie_Estado === 'OK' ? 'OK' : 'REVISAR', fuente: adm.Superficie_Fuente } : undefined,
+    contratos: contratos,
     barrio: barrio,
     nombre: b.Nombre,
     tiposLote: filas_('COEFICIENTES_LOTE')
@@ -155,6 +178,47 @@ function doGet(e) {
   var cfg = configBarrio_(barrio);
   var out = cfg || { error: 'Barrio sin configuración: ' + barrio };
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * POST desde la app: guarda los comentarios editados (hojas COMENTARIOS y NOTAS).
+ * Pide una clave: Configuración del proyecto → Propiedades del script → CLAVE_EDICION.
+ * Cuerpo: {accion:'comentarios', clave, idPeriodo, porque:{concepto:texto}, notas:{clave:texto}}
+ */
+function doPost(e) {
+  var salida = function (o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); };
+  try {
+    var b = JSON.parse(e.postData.contents);
+    var clave = PropertiesService.getScriptProperties().getProperty('CLAVE_EDICION');
+    if (!clave || b.clave !== clave) return salida({ ok: false, error: 'Clave incorrecta' });
+    if (b.accion !== 'comentarios' || !/^[A-Z0-9]{2}-\d{4}-\d{2}$/.test(b.idPeriodo)) return salida({ ok: false, error: 'Pedido inválido' });
+    prepararPlanilla();
+    var n = 0;
+    n += guardar_('COMENTARIOS', b.idPeriodo, b.porque || {});
+    n += guardar_('NOTAS', b.idPeriodo, b.notas || {});
+    return salida({ ok: true, guardados: n });
+  } catch (err) {
+    return salida({ ok: false, error: String(err) });
+  }
+}
+
+/** Reemplaza o agrega filas (ID_Periodo, clave, texto) en COMENTARIOS o NOTAS. */
+function guardar_(hoja, idPeriodo, mapa) {
+  var h = SpreadsheetApp.getActive().getSheetByName(hoja);
+  var datos = h.getDataRange().getDisplayValues();
+  var n = 0;
+  Object.keys(mapa).forEach(function (k) {
+    var texto = String(mapa[k]).slice(0, 2000);
+    var fila = -1;
+    for (var i = 1; i < datos.length; i++) if (datos[i][0] === idPeriodo && datos[i][1] === k) fila = i + 1;
+    if (fila > 0) h.getRange(fila, 3).setValue(texto);
+    else {
+      h.appendRow([idPeriodo, k, texto]);
+      datos.push([idPeriodo, k, texto]);
+    }
+    n++;
+  });
+  return n;
 }
 
 /**
@@ -188,5 +252,11 @@ function cargarEjemploDesdeRepo() {
     agregar('CREDITOS', p.creditos.map(function (d) { return [id, d.concepto, d.importe === null ? 'N/D' : d.importe, d.nota, d.tipo, d.hallazgo || '']; }));
     agregar('NOVEDADES', p.novedades.map(function (n) { return [id, n.titulo, n.texto, n.tipo]; }));
     agregar('COMENTARIOS', Object.keys(p.comentarios).map(function (k) { return [id, k, p.comentarios[k]]; }));
+    agregar('NOTAS', Object.keys(p.notas || {}).map(function (k) { return [id, k, p.notas[k]]; }));
+    if (p.particulares) agregar('PARTICULARES', [[id, p.particulares.concepto, p.particulares.lotes === null ? 'N/D' : String(p.particulares.lotes), p.particulares.valor || '', p.particulares.fondo, p.particulares.nota, p.particulares.estado]]);
   });
+  var a = cfg.administracion || {};
+  var sup = cfg.superficieM2 || {};
+  agregar('ADMINISTRACION', [[B, a.nombre || '', a.matricula || '', a.cuit || '', a.contacto || '', a.horario || '', a.banco || '', a.cbu || '', a.alias || '', a.titular || '', sup.valor ? String(sup.valor) : '', sup.estado || '', sup.fuente || '']]);
+  agregar('CONTRATOS', (cfg.contratos || []).map(function (c) { return [B, c.proveedor, c.objeto, c.vence || '', c.actualizacion || '', c.nota || '']; }));
 }
